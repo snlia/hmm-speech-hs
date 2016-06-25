@@ -1,8 +1,10 @@
 module Common
 ( FrameInc,
   FrameLen,
+  Count,
   Frame,
   Frames (..),
+  Vect,
   wav2data,
   one,
   ones,
@@ -10,7 +12,8 @@ module Common
   zeros,
   toOne,
   toOnes,
-  hamming
+  hamming,
+  frmap
 ) where
 
 import Data.WAVE
@@ -19,16 +22,13 @@ type FrameInc = Int
 type FrameLen = Int
 type FrameRate = Int
 type Count = Int
+type Vect = [Double]
 type Frame = [Double]
 data Frames = Frames {samples :: [Frame], frameinc :: FrameInc, framelen :: FrameLen} deriving (Show)
 
---trans WAVESample  to Double
-int2double :: WAVESample -> Double
-int2double x = fromIntegral x :: Double
-
 --trans WAVESamples to Frames
 wav2data :: WAVESamples -> Frames
-wav2data x = Frames {samples = fmap (map int2double) x, framelen = flen, frameinc = -1}
+wav2data x = Frames {samples = fmap (map sampleToDouble) x, framelen = flen, frameinc = -1}
     where flen = length $ head x 
 
 --output a list of 1.0
@@ -58,3 +58,7 @@ hamming :: Count -> Frame
 hamming count = map (\x -> 0.54 - 0.46 * cos (2 * pi * x / cx))  [1..cx] 
     where int2float x = fromIntegral x :: Double
           cx = int2float count
+
+--map func on Frames
+frmap :: ([Frame] -> [Frame]) -> Frames -> Frames
+frmap f x = Frames {samples = f $ samples x, framelen = framelen x, frameinc = frameinc x}

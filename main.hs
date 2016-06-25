@@ -1,5 +1,7 @@
 import System.IO
 import Data.WAVE
+import Common 
+import Enframe 
 import Vad
 
 type Wfilename = String
@@ -7,12 +9,23 @@ type Wname = String
 type Wno = Int
 type Wword = String
 
+getwav :: Wname -> Wword -> Wno -> IO WAVE
+getwav a b c = do 
+    hwav <- openFile (getwavname a b c) ReadMode
+    hGetWAVE hwav
+    where getwavname a b c = pwd ++ a ++ "_" ++ b ++ "_" ++ (show c) ++ ".wav"
+          pwd = "/home/snlia/work/speech/myspeech-hs/data/"
+
 main = do
-    let getwavname a b c = pwd ++ a ++ "_" ++ b ++ "_" ++ (show c) ++ ".wav"
-        pwd = "/home/snlia/work/speech/myspeech-hs/data/"
-        wname = "14307130244"
+    let wname = "14307130244"
         wword = "Start"
         wno = 1
-    hwav <- openFile (getwavname wname wword wno) ReadMode
-    x <- hGetWAVE hwav
-    print $ waveSamples $ vad x
+    x <- getwav wname wword wno
+    handle <- openFile "1.wav" WriteMode
+    let y = mkframe (waveSamples x) framelen frameinc
+        ys = samples y
+        fs = 8000
+        framelen = fs `div` 50
+        frameinc = framelen `div` 2
+        sqr x = x * x
+    hPutWAVE handle $ vad x
