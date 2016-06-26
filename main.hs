@@ -22,10 +22,9 @@ main = do
         wno = 1
     x <- getwav wname wword wno
     handle <- openFile "1.wav" WriteMode
-    let y = mkframe (waveSamples x) framelen frameinc
+    let y = toOnes $ mkframe (waveSamples x) framelen frameinc
         ys = samples y
         fs = 8000
         framelen = fs `div` 50
         frameinc = framelen `div` 2
---    print $ waveSamples . vad $ x
     hPutWAVE handle (vad x)

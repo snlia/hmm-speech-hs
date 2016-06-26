@@ -1,6 +1,5 @@
 module Vad  
-( vad,
-vad''
+( vad
 ) where
 
 import Data.WAVE
@@ -11,7 +10,7 @@ import Enframe
 vad'' :: WAVE -> (Int, Int)
 vad'' wav = vad' y
     where fs = waveFrameRate . waveHeader $ wav
-          y = mkframe (waveSamples wav) framelen frameinc
+          y = toOnes $ mkframe (waveSamples wav) framelen frameinc
           framelen = fs `div` 50
           frameinc = framelen `div` 2
 
@@ -41,7 +40,14 @@ sZcr :: Frames -> Vect
 sZcr y = map (sum . delta) yy
     where yy = samples y
           delta x = zipWith (\x y -> if (abs (x - y) > esp && x*y > 0) then 1 else 0) x $ tail x
-          esp = max (maximum $ head df) (maximum $ last df);
+          esp = max (head $ head df) (last $ last df);
+          df = map dff yy
+          dff x = zipWith (\x y -> abs (x - y)) x $ tail x
+
+espp :: Frames -> Double
+espp y = esp
+    where yy = samples y
+          esp = max (head $ head df) (last $ last df);
           df = map dff yy
           dff x = zipWith (\x y -> abs (x - y)) x $ tail x
 
@@ -56,9 +62,12 @@ vadHead y = inc * (length thdk)
           se = sE y
           fstk = takeWhile (< mH) se
           sndk = dropWhile (> mL) $ reverse fstk
-          thdk = dropWhile (> z0) $ reverse (take (length sndk) szcr)
+          thdk = dropWhile (>= z0) $ reverse (take (length sndk) szcr)
           inc = frameinc y
 
 --Find end point
 vadEnd :: Frames -> Count
-vadEnd = vadHead . (frmap reverse)
+vadEnd f = (inc * length y) - (vadHead . (frmap reverse) $ f)
+    where y = samples f
+          inc = frameinc f
+

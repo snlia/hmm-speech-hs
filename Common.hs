@@ -26,9 +26,13 @@ type Vect = [Double]
 type Frame = [Double]
 data Frames = Frames {samples :: [Frame], frameinc :: FrameInc, framelen :: FrameLen} deriving (Show)
 
+--trans WAVESample  to Double
+samp2double :: WAVESample -> Double
+samp2double x = fromIntegral x :: Double
+
 --trans WAVESamples to Frames
 wav2data :: WAVESamples -> Frames
-wav2data x = Frames {samples = fmap (map sampleToDouble) x, framelen = flen, frameinc = -1}
+wav2data x = Frames {samples = fmap (map samp2double) x, framelen = flen, frameinc = -1}
     where flen = length $ head x 
 
 --output a list of 1.0
