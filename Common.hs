@@ -1,6 +1,7 @@
 module Common
 ( FrameInc,
   FrameLen,
+  FrameRate,
   Count,
   Frame,
   Frames (..),
@@ -13,10 +14,12 @@ module Common
   toOne,
   toOnes,
   hamming,
-  frmap
+  frmap,
+  transc
 ) where
 
 import Data.WAVE
+import Data.Complex
 
 type FrameInc = Int
 type FrameLen = Int
@@ -66,3 +69,7 @@ hamming count = map (\x -> 0.54 - 0.46 * cos (2 * pi * x / cx))  [1..cx]
 --map func on Frames
 frmap :: ([Frame] -> [Frame]) -> Frames -> Frames
 frmap f x = Frames {samples = f $ samples x, framelen = framelen x, frameinc = frameinc x}
+
+--trans a [Frame] to [[Complex Double]]
+transc :: [Frame] -> [[Complex Double]]
+transc = fmap $ map (\x -> x :+ 0)

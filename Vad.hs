@@ -16,12 +16,13 @@ vad'' wav = vad' y
 
 vad :: WAVE -> WAVE
 vad wav = 
-    WAVE {waveHeader = waveHeader wav, waveSamples = takefrom (vad' y) samp}
+    WAVE {waveHeader = rmframe . waveHeader $ wav, waveSamples = takefrom (vad' y) samp}
         where fs = waveFrameRate . waveHeader $ wav
               y = mkframe (waveSamples wav) framelen frameinc
               framelen = fs `div` 50
               frameinc = framelen `div` 2
               samp = waveSamples wav
+              rmframe x = WAVEHeader {waveNumChannels = waveNumChannels x, waveBitsPerSample = waveBitsPerSample x, waveFrameRate = waveFrameRate x, waveFrames = Nothing}
               takefrom (a, b) = drop a . take b
 
 vad' :: Frames -> (Int, Int)
