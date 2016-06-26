@@ -1,12 +1,19 @@
 module Vad  
 ( vad,
-  vadHead
+vad''
 ) where
 
 import Data.WAVE
 import Data.List
 import Common
 import Enframe
+
+vad'' :: WAVE -> (Int, Int)
+vad'' wav = vad' y
+    where fs = waveFrameRate . waveHeader $ wav
+          y = mkframe (waveSamples wav) framelen frameinc
+          framelen = fs `div` 50
+          frameinc = framelen `div` 2
 
 vad :: WAVE -> WAVE
 vad wav = 
@@ -17,6 +24,7 @@ vad wav =
               frameinc = framelen `div` 2
               samp = waveSamples wav
               takefrom (a, b) = drop a . take b
+
 vad' :: Frames -> (Int, Int)
 vad' y =  (headp, endp)
     where headp = vadHead y
@@ -32,7 +40,11 @@ sE y = map (sum . (map sqr)) yy
 sZcr :: Frames -> Vect
 sZcr y = map (sum . delta) yy
     where yy = samples y
-          delta x = map abs $ zipWith (-) x $ tail x
+          delta x = zipWith (\x y -> if (abs (x - y) > esp && x*y > 0) then 1 else 0) x $ tail x
+          esp = max (maximum $ head df) (maximum $ last df);
+          df = map dff yy
+          dff x = zipWith (\x y -> abs (x - y)) x $ tail x
+
 
 --Find head point
 vadHead :: Frames -> Count

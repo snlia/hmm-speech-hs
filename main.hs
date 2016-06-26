@@ -27,5 +27,5 @@ main = do
         fs = 8000
         framelen = fs `div` 50
         frameinc = framelen `div` 2
-        sqr x = x * x
-    hPutWAVE handle $ vad x
+--    print $ waveSamples . vad $ x
+    hPutWAVE handle (vad x)
